@@ -173,10 +173,11 @@ mobo-mobile/
 │   ├── index.tsx
 │   └── (tabs)/
 │       ├── _layout.tsx
-│       ├── index.tsx
 │       ├── login.tsx
 │       ├── home.tsx
 │       ├── controle.tsx
+│       ├── perfil.tsx
+│       ├── registros.tsx
 │       └── calendario.tsx
 │
 ├── assets/
