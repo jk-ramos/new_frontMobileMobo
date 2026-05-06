@@ -1,17 +1,18 @@
-import * as ScreenOrientation from 'expo-screen-orientation';
-import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
+import * as ScreenOrientation from 'expo-screen-orientation';
+import { useCallback, useRef, useState } from 'react';
 import {
-    Alert,
-    Animated,
-    Image,
-    ImageBackground,
-    PanResponder,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Animated,
+  Image,
+  ImageBackground,
+  PanResponder,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 
@@ -100,21 +101,19 @@ export default function Controle() {
         })
     ).current;
 
-    useEffect(() => {
-        async function lockLandscape() {
-            await ScreenOrientation.lockAsync(
+    useFocusEffect(
+        useCallback(() => {
+            ScreenOrientation.lockAsync(
                 ScreenOrientation.OrientationLock.LANDSCAPE
             );
-        }
 
-        lockLandscape();
-
-        return () => {
-            ScreenOrientation.lockAsync(
-                ScreenOrientation.OrientationLock.PORTRAIT_UP
-            );
-        };
-    }, []);
+            return () => {
+                ScreenOrientation.lockAsync(
+                    ScreenOrientation.OrientationLock.PORTRAIT_UP
+                );
+            };
+        }, [])
+    );
 
     async function handleUpload() {
         const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -161,12 +160,12 @@ export default function Controle() {
                 useNativeDriver: false,
             }),
         ]).start(() => {
-  setDetectionResult('Lichia detectada • Madura');
+            setDetectionResult('Lichia detectada • Madura');
 
-  setTimeout(() => {
-    setDetectionResult('');
-  }, 7000);
-});
+            setTimeout(() => {
+                setDetectionResult('');
+            }, 7000);
+        });
     }
 
     return (
@@ -256,45 +255,45 @@ export default function Controle() {
                         }}
                     >
                         <View
-  style={{
-    position: 'absolute',
-    left: 30,
-    bottom: 40,
-  }}
->
-  {/* BASE (não mexe) */}
-  <Image
-    source={require('../../assets/images/joystick-esquerdo.png')}
-    style={{
-      width: 100,
-      height: 100,
-      resizeMode: 'contain',
-    }}
-  />
+                            style={{
+                                position: 'absolute',
+                                left: 30,
+                                bottom: 40,
+                            }}
+                        >
+                            {/* BASE (não mexe) */}
+                            <Image
+                                source={require('../../assets/images/joystick-esquerdo.png')}
+                                style={{
+                                    width: 100,
+                                    height: 100,
+                                    resizeMode: 'contain',
+                                }}
+                            />
 
-  {/* BOTÃO (se move) */}
-  <Animated.View
-    {...leftPanResponder.panHandlers}
-    style={{
-      position: 'absolute',
-      top: 35,
-      left: 35,
-      transform: [
-        { translateX: leftJoystick.x },
-        { translateY: leftJoystick.y },
-      ],
-    }}
-  >
-    <Image
-      source={require('../../assets/images/joystick-esquerdo.png')}
-      style={{
-        width: 50,
-        height: 50,
-        opacity: 0.9,
-      }}
-    />
-  </Animated.View>
-</View>
+                            {/* BOTÃO (se move) */}
+                            <Animated.View
+                                {...leftPanResponder.panHandlers}
+                                style={{
+                                    position: 'absolute',
+                                    top: 35,
+                                    left: 35,
+                                    transform: [
+                                        { translateX: leftJoystick.x },
+                                        { translateY: leftJoystick.y },
+                                    ],
+                                }}
+                            >
+                                <Image
+                                    source={require('../../assets/images/joystick-esquerdo.png')}
+                                    style={{
+                                        width: 50,
+                                        height: 50,
+                                        opacity: 0.9,
+                                    }}
+                                />
+                            </Animated.View>
+                        </View>
                     </View>
                     <View
                         style={{
