@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
+  BackHandler
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
@@ -20,11 +21,11 @@ import { colors } from '@/components/mobo-ui';
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [email, setEmail] = useState('jaque@gmail.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
   const { width, height } = useWindowDimensions();
-  const screenWidth = Math.min(width, 390);
-  const horizontalPadding = screenWidth * 0.1;
+  const horizontalPadding = width * 0.1;
 
   function handleLogin() {
     if (!email.trim()) {
@@ -51,23 +52,43 @@ export default function Login() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <StatusBar style="light" backgroundColor={colors.red} />
+
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { minHeight: Math.max(height, 844) }]}
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { minHeight: Math.max(height, 844) },
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.phoneFrame, { width: screenWidth }]}>
+        <View style={styles.phoneFrame}>
           <Image
             source={require('../../assets/images/logo-branca.png')}
             style={styles.logo}
             resizeMode="contain"
           />
 
+          <TouchableOpacity
+            style={styles.closeButton}
+            activeOpacity={0.8}
+            // ação de sair
+            onPress={() => BackHandler.exitApp()}
+              
+            
+          >
+            <Ionicons
+              name="close-outline"
+              size={30}
+              color={colors.cream}
+            />
+          </TouchableOpacity>
+
           <View style={styles.hero}>
             <Image
               source={require('../../assets/images/robofrosa.png')}
               style={styles.heroImage}
-              resizeMode="stretch"
+              resizeMode="cover"
             />
           </View>
 
@@ -79,49 +100,60 @@ export default function Login() {
               },
             ]}
           >
-            <Text style={styles.title}>
-              Bem Vindo!
-            </Text>
+            <Text style={styles.title}>Bem Vindo!</Text>
 
-            <View style={styles.fieldFrame}>
-              <View style={styles.fieldDrop} />
+            <View style={styles.fieldWrapper}>
+              <View style={styles.labelBox}>
+                <Text style={styles.labelText}>Email</Text>
+              </View>
+
               <View style={styles.field}>
+                <Ionicons
+                  name="mail-outline"
+                  size={31}
+                  color={colors.cream}
+                  style={styles.fieldIcon}
+                />
+
                 <TextInput
                   value={email}
                   onChangeText={setEmail}
-                  placeholder="jaque@gmail.com"
-                  placeholderTextColor="#E5DFD0"
+                  placeholder="Digite seu email"
+                  placeholderTextColor="#D38BA2"
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  autoCorrect={false}
                   style={styles.input}
                 />
               </View>
             </View>
 
-            <View style={styles.fieldFrame}>
-              <View style={styles.fieldDrop} />
+            <View style={styles.fieldWrapper}>
+              <View style={styles.labelBox}>
+                <Text style={styles.labelText}>Senha</Text>
+              </View>
+
               <View style={styles.field}>
-                <View style={styles.passwordRow}>
-                  <TextInput
-                    value={password}
-                    onChangeText={setPassword}
-                    placeholder="••••••"
-                    placeholderTextColor="#F8F2EB"
-                    secureTextEntry={!showPassword}
-                    style={[styles.input, styles.passwordInput]}
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => setShowPassword((value) => !value)}
+                  style={styles.passwordEyeButton}
+                >
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={34}
+                    color={colors.cream}
                   />
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => setShowPassword((value) => !value)}
-                    style={styles.eyeButton}
-                  >
-                    <Ionicons
-                      name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-                      size={31}
-                      color={colors.cream}
-                    />
-                  </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
+
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Digite sua senha"
+                  placeholderTextColor="#D38BA2"
+                  secureTextEntry={!showPassword}
+                  style={styles.input}
+                />
               </View>
             </View>
 
@@ -132,8 +164,11 @@ export default function Login() {
                 style={styles.rememberButton}
               >
                 <View style={styles.checkbox}>
-                  {rememberMe && <Ionicons name="checkmark" size={30} color="#A98F65" />}
+                  {rememberMe && (
+                    <Ionicons name="checkmark" size={25} color="#A98F65" />
+                  )}
                 </View>
+
                 <Text style={styles.helperText}>Lembre-se</Text>
               </TouchableOpacity>
 
@@ -143,7 +178,11 @@ export default function Login() {
             </View>
 
             <View style={styles.buttonShadow}>
-              <TouchableOpacity activeOpacity={0.85} onPress={handleLogin} style={styles.loginButton}>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={handleLogin}
+                style={styles.loginButton}
+              >
                 <Text style={styles.loginButtonText}>Entrar</Text>
               </TouchableOpacity>
             </View>
@@ -155,9 +194,7 @@ export default function Login() {
             >
               <Text style={styles.signupText}>
                 Ainda não possui conta?{' '}
-                <Text style={styles.signupStrong}>
-                  Cadastre-se
-                </Text>
+                <Text style={styles.signupStrong}>Cadastre-se</Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -170,28 +207,32 @@ export default function Login() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.red,
+    backgroundColor: colors.wine,
+  },
+  scroll: {
+    flex: 1,
+    backgroundColor: colors.wine,
   },
   scrollContent: {
     flexGrow: 1,
-    backgroundColor: colors.red,
+    backgroundColor: colors.wine,
   },
   phoneFrame: {
     flexGrow: 1,
-    alignSelf: 'center',
+    width: '100%',
     backgroundColor: colors.red,
   },
   logo: {
     position: 'absolute',
-    top: 49,
+    top: 70,
     alignSelf: 'center',
-    width: 88,
-    height: 49,
-    zIndex: 4,
+    width: 112,
+    height: 64,
+    zIndex: 5,
   },
   hero: {
-    height: 366,
-    marginTop: 116,
+    height: 380,
+    marginTop: 92,
     overflow: 'hidden',
     zIndex: 2,
   },
@@ -201,85 +242,90 @@ const styles = StyleSheet.create({
   },
   formPanel: {
     flex: 1,
-    marginTop: -93,
-    minHeight: 470,
-    backgroundColor: colors.wine,
-    borderTopLeftRadius: 43,
-    borderTopRightRadius: 43,
-    paddingTop: 44,
-    paddingBottom: 36,
-    zIndex: 1,
+    marginTop: -45,
+    minHeight: 520,
+    backgroundColor: 'rgba(110, 0, 38, 0.80)',
+    borderTopLeftRadius: 46,
+    borderTopRightRadius: 46,
+    paddingTop: 43,
+    paddingBottom: 48,
+    zIndex: 3,
   },
   title: {
     color: colors.cream,
     fontFamily: 'Livvic_400Regular',
-    fontSize: 25,
-    lineHeight: 33,
+    fontSize: 29,
+    lineHeight: 36,
     textAlign: 'center',
     marginBottom: 36,
   },
-  fieldFrame: {
-    minHeight: 70,
-    marginBottom: 20,
+  fieldWrapper: {
+    height: 76,
+    marginBottom: 24,
+    justifyContent: 'flex-end',
   },
-  fieldDrop: {
+  labelBox: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 62,
-    borderRadius: 17,
-    backgroundColor: '#E1DFCF',
+    top: 0,
+    alignSelf: 'center',
+    minWidth: 104,
+    height: 30,
+    backgroundColor: colors.wine,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  labelText: {
+    color: colors.cream,
+    fontFamily: 'Livvic_400Regular',
+    fontSize: 22,
+    lineHeight: 28,
   },
   field: {
-    minHeight: 62,
-    borderRadius: 17,
+    height: 66,
+    borderRadius: 14,
     borderWidth: 2,
     borderColor: colors.cream,
-    backgroundColor: '#9C1E3B',
+    backgroundColor: colors.wine,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 21,
+    paddingRight: 16,
+  },
+  fieldIcon: {
+    marginRight: 18,
+  },
+  passwordEyeButton: {
+    width: 40,
+    height: 44,
+    marginRight: 18,
+    alignItems: 'center',
     justifyContent: 'center',
   },
   input: {
-    minHeight: 58,
-    color: '#E5DFD0',
-    fontFamily: 'Livvic_400Regular',
-    fontSize: 24,
-    paddingHorizontal: 20,
-    paddingVertical: 0,
-  },
-  passwordRow: {
-    minHeight: 58,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingRight: 16,
-  },
-  passwordInput: {
     flex: 1,
+    height: '100%',
     color: colors.cream,
-    letterSpacing: 7,
-  },
-  eyeButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+    fontFamily: 'Livvic_400Regular',
+    fontSize: 21,
+    paddingVertical: 0,
   },
   actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 10,
+    gap: 12,
     marginTop: 1,
-    marginBottom: 43,
+    marginBottom: 42,
   },
   rememberButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 11,
   },
   checkbox: {
-    width: 29,
-    height: 29,
+    width: 25,
+    height: 25,
     borderRadius: 6,
     backgroundColor: '#E5DFD0',
     alignItems: 'center',
@@ -288,7 +334,7 @@ const styles = StyleSheet.create({
   helperText: {
     color: '#E5DFD0',
     fontFamily: 'Livvic_400Regular',
-    fontSize: 19,
+    fontSize: 17,
     lineHeight: 26,
   },
   buttonShadow: {
@@ -297,7 +343,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   loginButton: {
-    minHeight: 62,
+    height: 66,
     borderRadius: 15,
     backgroundColor: '#C7034B',
     alignItems: 'center',
@@ -309,17 +355,34 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
   signupButton: {
-    marginTop: 30,
+    marginTop: 31,
   },
   signupText: {
     textAlign: 'center',
     color: '#DDD8C9',
     fontFamily: 'Livvic_400Regular',
-    fontSize: 21,
+    fontSize: 20,
     lineHeight: 28,
   },
   signupStrong: {
     color: colors.cream,
     fontFamily: 'Livvic_700Bold',
   },
+
+  closeButton: {
+  position: 'absolute',
+  top: 52,
+  right: 22,
+  zIndex: 10,
+
+  width: 30,
+  height: 30,
+
+  borderRadius: 21,
+
+  alignItems: 'center',
+  justifyContent: 'center',
+
+  backgroundColor: 'rgba(194, 25, 61, 100)',
+},
 });

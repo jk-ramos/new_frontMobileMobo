@@ -1,27 +1,65 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import {
   Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
+  Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 
-import { PrimaryButton, colors } from '@/components/mobo-ui';
+import { colors } from '@/components/mobo-ui';
+
+const accountOptions = [
+  'Nenhum',
+  'CEO de Empresa',
+  'Funcionário',
+  'Agricultor Familiar',
+];
 
 export default function CompletarCadastro() {
-  const [accountType, setAccountType] = useState('');
+  const [accountType, setAccountType] = useState('Nenhum');
+  const [dropdownVisible, setDropdownVisible] = useState(false);
   const [phone, setPhone] = useState('');
   const [cpf, setCpf] = useState('');
   const [cap, setCap] = useState('');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  const { width, height } = useWindowDimensions();
+  const horizontalPadding = width * 0.1;
+
+  async function handlePickProfileImage() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      alert('Permissão necessária para acessar a galeria.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  }
 
   function handleSubmit() {
-    if (!accountType.trim() || !phone.trim() || !cpf.trim() || !cap.trim()) {
+    if (!phone.trim() || !cpf.trim() || !cap.trim()) {
       alert('Complete os dados do cadastro.');
       return;
     }
@@ -31,216 +69,165 @@ export default function CompletarCadastro() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.red }}
+      style={styles.screen}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <StatusBar style="light" backgroundColor={colors.red} />
+
       <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { minHeight: Math.max(height, 844) },
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1 }}
       >
-        <View style={{ minHeight: 900, backgroundColor: colors.red, overflow: 'hidden' }}>
-          <Image
-            source={require('../../assets/images/robofrosa.png')}
-            style={{
-              position: 'absolute',
-              top: 116,
-              left: -20,
-              width: '112%',
-              height: 430,
-              opacity: 0.5,
-            }}
-            resizeMode="contain"
-          />
-
-          <View
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(98, 0, 30, 0.34)',
-            }}
-          />
-
+        <View style={styles.phoneFrame}>
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={() => router.back()}
-            style={{
-              position: 'absolute',
-              top: 70,
-              left: 28,
-              width: 46,
-              height: 46,
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 5,
-            }}
+            style={styles.backButton}
           >
-            <Ionicons name="arrow-back" size={36} color={colors.white} />
+            <Ionicons name="arrow-back-outline" size={38} color={colors.cream} />
           </TouchableOpacity>
 
           <Image
             source={require('../../assets/images/logo-branca.png')}
-            style={{
-              position: 'absolute',
-              top: 58,
-              alignSelf: 'center',
-              width: 120,
-              height: 68,
-              zIndex: 4,
-            }}
+            style={styles.logo}
             resizeMode="contain"
           />
 
-          <View
-            style={{
-              flex: 1,
-              paddingHorizontal: 22,
-              paddingTop: 190,
-              paddingBottom: 42,
-            }}
-          >
-            <View style={{ alignItems: 'center', marginBottom: 22 }}>
+          <View style={styles.hero}>
+            <Image
+              source={require('../../assets/images/robofrosa.png')}
+              style={styles.heroImage}
+              resizeMode="cover"
+            />
+          </View>
+
+          <View style={[styles.formPanel, { paddingHorizontal: horizontalPadding }]}>
+            <View style={styles.avatarArea}>
               <TouchableOpacity
                 activeOpacity={0.85}
-                style={{
-                  width: 122,
-                  height: 122,
-                  borderRadius: 61,
-                  borderWidth: 4,
-                  borderColor: 'rgba(248, 242, 235, 0.9)',
-                  backgroundColor: 'rgba(248, 242, 235, 0.2)',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 7 },
-                  shadowOpacity: 0.24,
-                  shadowRadius: 12,
-                  elevation: 8,
-                }}
+                style={styles.avatarButton}
+                onPress={handlePickProfileImage}
               >
-                <Ionicons name="person" size={76} color="#F2E6EA" />
-                <View
-                  style={{
-                    position: 'absolute',
-                    right: -1,
-                    bottom: 7,
-                    width: 42,
-                    height: 42,
-                    borderRadius: 21,
-                    backgroundColor: colors.magenta,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderWidth: 2,
-                    borderColor: 'rgba(248, 242, 235, 0.32)',
-                  }}
-                >
+                {profileImage ? (
+                  <Image source={{ uri: profileImage }} style={styles.avatarImage} />
+                ) : (
+                  <Ionicons name="person" size={76} color="#F2E6EA" />
+                )}
+
+                <View style={styles.avatarAddButton}>
                   <Ionicons name="add" size={30} color={colors.white} />
                 </View>
               </TouchableOpacity>
 
-              <Text
-                style={{
-                  color: colors.cream,
-                  fontFamily: 'Livvic_400Regular',
-                  fontSize: 29,
-                  marginTop: 20,
-                  textAlign: 'center',
-                }}
-              >
-                Complete seu cadastro!
-              </Text>
+              <Text style={styles.title}>Complete seu Cadastro!</Text>
 
-              <Text
-                style={{
-                  color: '#E8E3D3',
-                  fontFamily: 'Livvic_400Regular',
-                  fontSize: 18,
-                  lineHeight: 23,
-                  marginTop: 8,
-                  textAlign: 'center',
-                  maxWidth: 315,
-                }}
-              >
-                Precisamos de mais algumas informações para criar sua conta.
+              <Text style={styles.subtitle}>
+                Precisamos de mais algumas{'\n'}informações para criar sua conta.
               </Text>
             </View>
 
-            <View
-              style={{
-                borderWidth: 1.5,
-                borderColor: 'rgba(236, 78, 132, 0.58)',
-                borderRadius: 18,
-                backgroundColor: 'rgba(79, 0, 25, 0.42)',
-                paddingHorizontal: 18,
-                paddingTop: 28,
-                paddingBottom: 26,
-              }}
-            >
-              <ProfileField
-                icon="person-outline"
-                label="Tipo de Conta *"
-                value={accountType}
-                onChangeText={setAccountType}
-                placeholder="Selecione o tipo de conta"
-                rightIcon="chevron-down"
-              />
-
-              <ProfileField
-                icon="call-outline"
-                label="Telefone *"
-                value={phone}
-                onChangeText={setPhone}
-                placeholder="(00) 00000-0000"
-                keyboardType="phone-pad"
-              />
-
-              <ProfileField
-                icon="id-card-outline"
-                label="CPF *"
-                value={cpf}
-                onChangeText={setCpf}
-                placeholder="000.000.000-00"
-                keyboardType="number-pad"
-              />
-
-              <ProfileField
-                icon="location-outline"
-                label="CAP"
-                value={cap}
-                onChangeText={setCap}
-                placeholder="Digite seu CAP"
-                fieldMarginBottom={30}
-              />
-
-              <PrimaryButton title="Cadastrar-se" onPress={handleSubmit} />
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginTop: 42,
-                  gap: 10,
-                }}
-              >
-                <Ionicons name="lock-closed-outline" size={18} color="#EC4E84" />
-                <Text
-                  style={{
-                    color: '#DDD8C9',
-                    fontFamily: 'Livvic_400Regular',
-                    fontSize: 15,
-                  }}
-                >
-                  Seus dados estão protegidos
-                </Text>
+            <View style={[styles.fieldWrapper, { marginBottom: 24 }]}>
+              <View style={styles.labelBox}>
+                <Text style={styles.labelText}>Tipo de Usuário:</Text>
               </View>
+
+              <TouchableOpacity
+                activeOpacity={0.85}
+                style={styles.field}
+                onPress={() => setDropdownVisible(true)}
+              >
+                <Ionicons
+                  name="person-outline"
+                  size={34}
+                  color={colors.cream}
+                  style={styles.fieldIcon}
+                />
+
+                <Text style={styles.dropdownText}>{accountType}</Text>
+
+                <Ionicons name="chevron-down" size={24} color={colors.cream} />
+              </TouchableOpacity>
+            </View>
+
+            <ProfileField
+              icon="call-outline"
+              label="Telefone*"
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="(00)00000-0000"
+              keyboardType="phone-pad"
+            />
+
+            <ProfileField
+              icon="id-card-outline"
+              label="CPF*"
+              value={cpf}
+              onChangeText={setCpf}
+              placeholder="000.000.000-00"
+              keyboardType="number-pad"
+            />
+
+            <ProfileField
+              icon="location-outline"
+              label="CAP"
+              value={cap}
+              onChangeText={setCap}
+              placeholder="Digite seu CAP"
+              fieldMarginBottom={36}
+            />
+
+            <View style={styles.buttonShadow}>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={handleSubmit}
+                style={styles.registerButton}
+              >
+                <Text style={styles.registerButtonText}>Cadastrar-se</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.securityRow}>
+              <Ionicons name="lock-closed-outline" size={24} color="#C7034B" />
+              <Text style={styles.securityText}>Seus dados estão protegidos</Text>
             </View>
           </View>
         </View>
       </ScrollView>
+
+      <Modal
+        visible={dropdownVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDropdownVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setDropdownVisible(false)}
+        >
+          <View style={styles.dropdownBox}>
+            <Text style={styles.dropdownTitle}>Selecione o tipo de conta</Text>
+
+            {accountOptions.map((option) => (
+              <TouchableOpacity
+                key={option}
+                activeOpacity={0.8}
+                style={styles.dropdownOption}
+                onPress={() => {
+                  setAccountType(option);
+                  setDropdownVisible(false);
+                }}
+              >
+                <Text style={styles.dropdownOptionText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -252,8 +239,7 @@ function ProfileField({
   onChangeText,
   placeholder,
   keyboardType,
-  rightIcon,
-  fieldMarginBottom = 22,
+  fieldMarginBottom = 24,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
@@ -261,56 +247,246 @@ function ProfileField({
   onChangeText: (value: string) => void;
   placeholder: string;
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad' | 'number-pad';
-  rightIcon?: keyof typeof Ionicons.glyphMap;
   fieldMarginBottom?: number;
 }) {
   return (
-    <View style={{ marginBottom: fieldMarginBottom }}>
-      <View
-        style={{
-          position: 'absolute',
-          top: -11,
-          left: 72,
-          zIndex: 2,
-          backgroundColor: colors.wine,
-          paddingHorizontal: 10,
-        }}
-      >
-        <Text style={{ color: colors.cream, fontFamily: 'Livvic_400Regular', fontSize: 16 }}>
-          {label}
-        </Text>
+    <View style={[styles.fieldWrapper, { marginBottom: fieldMarginBottom }]}>
+      <View style={styles.labelBox}>
+        <Text style={styles.labelText}>{label}</Text>
       </View>
 
-      <View
-        style={{
-          minHeight: 70,
-          borderRadius: 15,
-          borderWidth: 1.5,
-          borderColor: '#EC4E84',
-          backgroundColor: 'rgba(97, 0, 30, 0.22)',
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 18,
-        }}
-      >
-        <Ionicons name={icon} size={30} color="#EC4E84" />
+      <View style={styles.field}>
+        <Ionicons name={icon} size={34} color={colors.cream} style={styles.fieldIcon} />
+
         <TextInput
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor="#D9C9C8"
+          placeholderTextColor="#E3B1BF"
           keyboardType={keyboardType}
-          style={{
-            flex: 1,
-            color: colors.cream,
-            fontFamily: 'Livvic_400Regular',
-            fontSize: 20,
-            paddingLeft: 18,
-            paddingRight: rightIcon ? 10 : 0,
-          }}
+          style={styles.input}
         />
-        {rightIcon ? <Ionicons name={rightIcon} size={28} color={colors.white} /> : null}
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.wine,
+  },
+  scroll: {
+    flex: 1,
+    backgroundColor: colors.wine,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    backgroundColor: colors.wine,
+  },
+  phoneFrame: {
+    flexGrow: 1,
+    width: '100%',
+    backgroundColor: colors.red,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 70,
+    left: 38,
+    zIndex: 10,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: {
+    position: 'absolute',
+    top: 70,
+    alignSelf: 'center',
+    width: 112,
+    height: 64,
+    zIndex: 5,
+  },
+  hero: {
+    height: 380,
+    marginTop: 92,
+    overflow: 'hidden',
+    zIndex: 1,
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+    opacity: 0.78,
+  },
+  formPanel: {
+    flex: 1,
+    marginTop: -255,
+    minHeight: 760,
+    backgroundColor: 'rgba(110, 0, 38, 0.86)',
+    borderTopLeftRadius: 46,
+    borderTopRightRadius: 46,
+    paddingTop: 64,
+    paddingBottom: 48,
+    zIndex: 3,
+  },
+  avatarArea: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  avatarButton: {
+    width: 112,
+    height: 112,
+    borderRadius: 56,
+    borderWidth: 4,
+    borderColor: colors.cream,
+    backgroundColor: 'rgba(248, 242, 235, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 56,
+  },
+  avatarAddButton: {
+    position: 'absolute',
+    right: -4,
+    bottom: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.magenta ?? '#C7034B',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    color: colors.cream,
+    fontFamily: 'Livvic_400Regular',
+    fontSize: 28,
+    lineHeight: 34,
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  subtitle: {
+    color: '#E8E3D3',
+    fontFamily: 'Livvic_400Regular',
+    fontSize: 17,
+    lineHeight: 23,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  fieldWrapper: {
+    height: 76,
+    justifyContent: 'flex-end',
+  },
+  labelBox: {
+    position: 'absolute',
+    top: 0,
+    alignSelf: 'center',
+    minWidth: 120,
+    height: 30,
+    backgroundColor: colors.wine,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+    paddingHorizontal: 12,
+  },
+  labelText: {
+    color: colors.cream,
+    fontFamily: 'Livvic_400Regular',
+    fontSize: 22,
+    lineHeight: 28,
+  },
+  field: {
+    height: 66,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: colors.cream,
+    backgroundColor: colors.wine,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 21,
+    paddingRight: 16,
+  },
+  fieldIcon: {
+    marginRight: 18,
+  },
+  input: {
+    flex: 1,
+    height: '100%',
+    color: colors.cream,
+    fontFamily: 'Livvic_400Regular',
+    fontSize: 21,
+    paddingVertical: 0,
+  },
+  dropdownText: {
+    flex: 1,
+    color: colors.cream,
+    fontFamily: 'Livvic_400Regular',
+    fontSize: 21,
+  },
+  buttonShadow: {
+    borderRadius: 15,
+    backgroundColor: colors.wineDark,
+    paddingBottom: 8,
+    marginTop: 10,
+  },
+  registerButton: {
+    height: 66,
+    borderRadius: 15,
+    backgroundColor: '#C7034B',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  registerButtonText: {
+    color: colors.white,
+    fontFamily: 'Livvic_700Bold',
+    fontSize: 22,
+  },
+  securityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 38,
+    gap: 10,
+  },
+  securityText: {
+    color: '#DDD8C9',
+    fontFamily: 'Livvic_400Regular',
+    fontSize: 21,
+    lineHeight: 28,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+  },
+  dropdownBox: {
+    width: '100%',
+    borderRadius: 18,
+    backgroundColor: 'rgba(110, 0, 38, 0.94)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(248, 242, 235, 0.35)',
+    paddingTop: 22,
+    paddingBottom: 14,
+    overflow: 'hidden',
+  },
+  dropdownTitle: {
+    color: '#E3B1BF',
+    fontFamily: 'Livvic_400Regular',
+    fontSize: 20,
+    paddingHorizontal: 22,
+    marginBottom: 12,
+  },
+  dropdownOption: {
+    paddingVertical: 16,
+    paddingHorizontal: 22,
+  },
+  dropdownOptionText: {
+    color: colors.cream,
+    fontFamily: 'Livvic_400Regular',
+    fontSize: 22,
+  },
+});

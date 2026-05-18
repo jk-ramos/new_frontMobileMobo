@@ -309,8 +309,8 @@ export function NoteList({
 }
 
 const recordImages = [
-  require('../assets/images/calendario.png'),
-  require('../assets/images/controle-bg.png'),
+  require('../assets/images/lichia1.png'),
+  require('../assets/images/lichia5.jpg'),
 ];
 
 export function RecordCard({ index = 0 }: { index?: number }) {

@@ -44,7 +44,7 @@ export default function Perfil() {
             }}
           >
             <Image
-              source={require('../../assets/images/imgVetor - Editado.png')}
+              source={require('../../assets/images/funcionaria.jpg')}
               style={{ width: '100%', height: '100%' }}
               resizeMode="cover"
             />
